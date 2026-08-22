@@ -371,6 +371,20 @@ class TuyaEntityConfig:
                 return d
         return None
 
+    def turn_on_companion_values(self):
+        """Return additional raw DPS values to assert on a light turn-on.
+
+        Some fixtures expose a public light switch plus a separate master
+        power DPS.  The latter must be asserted in the same local command as
+        the light switch for a reliable turn-on.  These are deliberately raw
+        values rather than entity DPS entries: they are write-only companions
+        to the owning light, not additional Home Assistant controls.
+        """
+        return {
+            str(companion["id"]): companion["value"]
+            for companion in self._config.get("turn_on_companions", [])
+        }
+
     def available(self, device):
         """Return whether this entity should be available, with state as given."""
         avail_dp = self.find_dps("available")

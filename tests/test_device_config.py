@@ -124,6 +124,12 @@ DP_SCHEMA = vol.Schema(
         vol.Optional("mask_signed"): True,
     }
 )
+TURN_ON_COMPANION_SCHEMA = vol.Schema(
+    {
+        vol.Required("id"): int,
+        vol.Required("value"): vol.Any(str, int, bool, float),
+    }
+)
 ENTITY_SCHEMA = vol.Schema(
     {
         vol.Required("entity"): vol.In(
@@ -165,6 +171,7 @@ ENTITY_SCHEMA = vol.Schema(
         vol.Optional("deprecated"): str,
         vol.Optional("mode"): vol.In(["box", "slider"]),
         vol.Optional("hidden"): vol.In([True, "unavailable"]),
+        vol.Optional("turn_on_companions"): [TURN_ON_COMPANION_SCHEMA],
         vol.Required("dps"): [DP_SCHEMA],
     }
 )

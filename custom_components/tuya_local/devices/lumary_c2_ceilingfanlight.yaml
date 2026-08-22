@@ -7,6 +7,9 @@ products:
 entities:
   - entity: light
     icon: "mdi:ceiling-fan-light"
+    turn_on_companions:
+      - id: 119
+        value: true
     dps:
       - id: 20
         type: boolean

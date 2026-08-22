@@ -153,6 +153,46 @@ async def test_async_turn_on_with_white_param():
 
 
 @pytest.mark.asyncio
+async def test_async_turn_on_asserts_companion_and_switch_atomically():
+    """A configured master companion is asserted with the light switch."""
+    mock_device = AsyncMock()
+    mock_device.get_property = Mock(return_value=False)
+    config = TuyaEntityConfig(
+        Mock(),
+        {
+            "entity": "light",
+            "turn_on_companions": [{"id": 119, "value": True}],
+            "dps": [{"id": 20, "name": "switch", "type": "boolean"}],
+        },
+    )
+    light = TuyaLocalLight(mock_device, config)
+
+    await light.async_turn_on()
+
+    mock_device.async_set_properties.assert_called_once_with({"119": True, "20": True})
+
+
+@pytest.mark.asyncio
+async def test_async_turn_on_reasserts_companion_when_light_state_is_stale():
+    """A turn-on repairs an off master even when the public switch says on."""
+    mock_device = AsyncMock()
+    mock_device.get_property = Mock(return_value=True)
+    config = TuyaEntityConfig(
+        Mock(),
+        {
+            "entity": "light",
+            "turn_on_companions": [{"id": 119, "value": True}],
+            "dps": [{"id": 20, "name": "switch", "type": "boolean"}],
+        },
+    )
+    light = TuyaLocalLight(mock_device, config)
+
+    await light.async_turn_on()
+
+    mock_device.async_set_properties.assert_called_once_with({"119": True, "20": True})
+
+
+@pytest.mark.asyncio
 async def test_async_turn_on_with_brightness_on_packed_dp():
     """Switch-on must merge cleanly when the dp is shared across sub-fields.
 

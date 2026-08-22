@@ -66,6 +66,7 @@ class TuyaLocalLight(TuyaLocalEntity, LightEntity):
         self._named_color_dps = dps_map.pop("named_color", None)
         self._effect_dps = dps_map.pop("effect", None)
         self._init_end(dps_map)
+        self._turn_on_companions = config.turn_on_companion_values()
 
         # Set min and max color temp
         if self._color_temp_dps:
@@ -306,7 +307,11 @@ class TuyaLocalLight(TuyaLocalEntity, LightEntity):
             return best_match
 
     async def async_turn_on(self, **params):
-        settings = {}
+        # Keep any fixture master-power companions in the same device command
+        # as the public light switch.  Assert these on every light.turn_on,
+        # rather than only when HA currently thinks the light is off: the
+        # master can be off while the public switch state is stale.
+        settings = self._turn_on_companions.copy()
         color_mode = None
         _LOGGER.debug("Light turn_on: %s", params)
         if self._color_mode_dps and ATTR_WHITE in params:
@@ -522,7 +527,7 @@ class TuyaLocalLight(TuyaLocalEntity, LightEntity):
         if (
             self._switch_dps
             and not self._switch_dps.readonly
-            and not self.is_on
+            and (self._turn_on_companions or not self.is_on)
             and (
                 self._switch_dps.mask is not None or self._switch_dps.id not in settings
             )
